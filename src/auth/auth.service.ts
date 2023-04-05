@@ -4,11 +4,12 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import type { AuthRequest } from './auth.interface';
 import { UserAggregate } from 'src/users/users.interface';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersService: UsersService,
+    @InjectModel('Users') private readonly usersService: UsersService,
     private jwtService: JwtService,
   ) {}
   async validateUser(username: string, password: string): Promise<any> {

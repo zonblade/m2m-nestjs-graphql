@@ -8,12 +8,12 @@ export class ItemsResolver {
   constructor(private itemService: ItemsService) {}
 
   @Mutation(() => ItemsListView)
-  async itemsCreate(@Args('input') input: ItemInput) {
+  async itemsCreate(@Args('input') _: ItemInput) {
     // return this.userService.create(input);
   }
 
   @Mutation(() => ItemsListView)
-  async itemsUpdate(@Args('input') input: ItemInput) {
+  async itemsUpdate(@Args('input') _: ItemInput) {
     // return this.userService.update(input);
   }
 

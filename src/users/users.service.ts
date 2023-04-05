@@ -7,7 +7,7 @@ import { UserAggregate } from './users.interface';
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectModel('user') private readonly userModel: Model<UserDocument>,
+    @InjectModel('User') private readonly userModel: Model<UserDocument>,
   ) {}
 
   async createUser(username: string, password: string): Promise<User> {

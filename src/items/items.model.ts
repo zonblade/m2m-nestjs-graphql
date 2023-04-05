@@ -2,6 +2,38 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectId } from 'bson';
 import { Document } from 'mongoose';
 
+class ItemRep extends Document {
+  @Prop()
+  badge: string;
+
+  @Prop()
+  value: number;
+}
+
+class ItemsTime extends Document {
+  @Prop(() => Date)
+  created: Date;
+
+  @Prop(() => Date)
+  updated: Date;
+}
+
+class ItemsControl extends Document {
+  @Prop()
+  active: boolean;
+
+  @Prop()
+  deleted: boolean;
+
+  @Prop()
+  banned: boolean;
+
+  @Prop()
+  for_sale: boolean;
+
+  @Prop()
+  editable: boolean;
+}
 @Schema({ collection: 'items' })
 export class Items extends Document {
   @Prop()
@@ -45,39 +77,6 @@ export class Items extends Document {
 
   @Prop({ index: { text: true } })
   indexes: string;
-}
-
-class ItemRep extends Document {
-  @Prop()
-  badge: string;
-
-  @Prop()
-  value: number;
-}
-
-class ItemsTime extends Document {
-  @Prop(() => Date)
-  created: Date;
-
-  @Prop(() => Date)
-  updated: Date;
-}
-
-class ItemsControl extends Document {
-  @Prop()
-  active: boolean;
-
-  @Prop()
-  deleted: boolean;
-
-  @Prop()
-  banned: boolean;
-
-  @Prop()
-  for_sale: boolean;
-
-  @Prop()
-  editable: boolean;
 }
 
 export const ItemsSchema = SchemaFactory.createForClass(Items);

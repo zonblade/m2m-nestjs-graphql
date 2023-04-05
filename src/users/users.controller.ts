@@ -19,7 +19,7 @@ export class UsersController {
   }
 
   @Get('/u/:username/')
-  async dataUser(@Param('username') username: string) {
+  async dataUser(@Param('username') _: string) {
     return '';
   }
 }
