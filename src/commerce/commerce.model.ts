@@ -5,23 +5,6 @@ import { Document } from 'mongoose';
 //
 // in this mvp, the payment always success
 //
-@Schema({ collection: 'commerce' })
-export class Commerce extends Document {
-  @Prop()
-  _user_sell: ObjectId;
-
-  @Prop()
-  _user_acquirer: ObjectId;
-
-  @Prop(() => CommerceItems)
-  items: CommerceItems[];
-
-  @Prop()
-  subtotal: number;
-
-  @Prop(() => CommercePayment)
-  payment: CommercePayment;
-}
 
 export class CommerceItems extends Document {
   @Prop()
@@ -61,6 +44,24 @@ export class CommercePayment extends Document {
 
   @Prop()
   status: string;
+}
+
+@Schema({ collection: 'commerce' })
+export class Commerce extends Document {
+  @Prop()
+  _user_sell: ObjectId;
+
+  @Prop()
+  _user_acquirer: ObjectId;
+
+  @Prop(() => CommerceItems)
+  items: CommerceItems[];
+
+  @Prop()
+  subtotal: number;
+
+  @Prop(() => CommercePayment)
+  payment: CommercePayment;
 }
 
 export const CommerceSchema = SchemaFactory.createForClass(Commerce);

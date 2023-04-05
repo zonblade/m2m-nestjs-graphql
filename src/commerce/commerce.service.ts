@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   CommerceDocument,
-  CommerceItems,
+  // CommerceItems,
   CommerceReviewDocument,
 } from './commerce.model';
 import { Model } from 'mongoose';
@@ -14,13 +14,14 @@ import {
   I_CommercePayment,
   I_CommerceReview,
 } from './commerce.interface';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class CommerceService {
   constructor(
-    private readonly commerceModel: Model<CommerceDocument>,
-    private readonly commerceReviewModel: Model<CommerceReviewDocument>,
-    private readonly itemsModel: Model<ItemsDocument>,
+    @InjectModel('Commerce') private readonly commerceModel: Model<CommerceDocument>,
+    @InjectModel('CommerceReview') private readonly commerceReviewModel: Model<CommerceReviewDocument>,
+    @InjectModel('Items') private readonly itemsModel: Model<ItemsDocument>,
   ) {}
 
   async itemAcquire(item_id: ObjectId, user_id: ObjectId, quantity: number) {
@@ -123,27 +124,29 @@ export class CommerceService {
     })[0];
     // calculate the new rating
     const newRep = itemReviews[0].final_score;
-    var newRepBadge = 'first';
-    if(newRep>=4){
-        newRepBadge = 'superstar';
-    }else if(newRep > 2 && newRep < 4){
-        newRepBadge = 'barebone';
-    }else{
-        newRepBadge = 'first';
+    let newRepBadge = 'first';
+    if (newRep >= 4) {
+      newRepBadge = 'superstar';
+    } else if (newRep > 2 && newRep < 4) {
+      newRepBadge = 'barebone';
+    } else {
+      newRepBadge = 'first';
     }
     // update the item reputation
     await this.itemsModel.findOneAndUpdate(
-        { _id: itemId },
-        { $set: {
-            reputation: {
-                badge: newRepBadge,
-                value: newRep,
-            }
-        }}
+      { _id: itemId },
+      {
+        $set: {
+          reputation: {
+            badge: newRepBadge,
+            value: newRep,
+          },
+        },
+      },
     );
   }
 
-  async orderHistory(user_id: ObjectId) {
+  async orderHistory() {
     // historical order for the current user.
   }
 

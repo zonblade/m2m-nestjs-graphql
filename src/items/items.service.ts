@@ -9,10 +9,11 @@ import {
 import { ObjectId } from 'bson';
 import { createSearchIndex } from 'src/lib/indexEngine';
 import { FILE_SERVER } from 'src/lib/globalConstant';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class ItemsService {
-  constructor(private readonly itemsSchema: Model<ItemsDocument>) {}
+  constructor(@InjectModel('Items') private readonly itemsSchema: Model<ItemsDocument>) {}
 
   async ItemCreate(
     user_id: ObjectId,

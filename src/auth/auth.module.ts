@@ -17,9 +17,10 @@ import { LocalStrategy } from './local.auth';
       secret: 'secretKey',
       signOptions: { expiresIn: '60s' },
     }),
-    MongooseModule.forFeature([{ name: 'user', schema: UserSchema }]),
+    MongooseModule.forFeature([{ name: 'Users', schema: UserSchema }]),
   ],
-  providers: [AuthService, UsersService, LocalStrategy],
+  providers: [AuthService, LocalStrategy],
   controllers: [AuthController],
+  exports: [AuthService],
 })
 export class AuthModule {}

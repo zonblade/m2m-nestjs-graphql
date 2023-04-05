@@ -3,6 +3,16 @@ import { Field, ObjectType, Float, Int } from '@nestjs/graphql';
 //
 // model view used for grapql model
 //
+
+@ObjectType()
+export class ItemsListViewRep {
+  @Field()
+  badge: string;
+
+  @Field(() => Int)
+  value: number;
+}
+
 @ObjectType()
 export class ItemsListView {
   @Field()
@@ -31,13 +41,4 @@ export class ItemsListView {
 
   @Field()
   availability: number;
-}
-
-@ObjectType()
-export class ItemsListViewRep {
-  @Field()
-  badge: string;
-
-  @Field(() => Int)
-  value: number;
 }
