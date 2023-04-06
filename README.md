@@ -33,3 +33,9 @@
 4. you can download the apps on [here]() (im using [expo.dev](https://expo.dev/) for Mini MVP purposes, which accelerate the development time)
 
 5. or you can build yourself from source code on reactnative-m2m repository and host your own backend.
+
+## File uploader
+
+POST : {domain}/items/image-upload
+multipart/form-data
+Field : "file"
