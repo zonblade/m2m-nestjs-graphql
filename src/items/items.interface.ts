@@ -1,12 +1,12 @@
 import { ObjectId } from 'bson';
 
 export interface I_ItemParam {
-  name: string;
-  category: string;
-  image: string;
-  price: number;
-  availability: number;
-  for_sale: boolean;
+  name?: string;
+  category?: string;
+  image?: string;
+  price?: number;
+  availability?: number;
+  for_sale?: boolean;
 }
 
 export interface I_ItemReviewParam {
