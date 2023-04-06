@@ -3,6 +3,20 @@ import { Field, ObjectType, Float, Int } from '@nestjs/graphql';
 //
 // model view used for grapql model
 //
+@ObjectType()
+export class ItemCreateResult {
+  @Field()
+  success: boolean;
+
+  @Field()
+  item_id?: string;
+}
+
+@ObjectType()
+export class ItemUpdateResult {
+  @Field()
+  success: boolean;
+}
 
 @ObjectType()
 export class ItemsListViewRep {

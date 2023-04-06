@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ItemsDocument } from './items.model';
-import { Aggregate, Model } from 'mongoose';
+import BadWord from 'src/lib/badWord';
+import { Model } from 'mongoose';
 import {
   I_ItemDocument,
   I_ItemParam,
@@ -13,12 +14,12 @@ import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class ItemsService {
-  constructor(@InjectModel('Items') private readonly itemsSchema: Model<ItemsDocument>) {}
+  constructor(
+    @InjectModel('Items') private readonly itemsSchema: Model<ItemsDocument>,
+  ) {}
 
-  async ItemCreate(
-    user_id: ObjectId,
-    input: I_ItemParam,
-  ): Promise<string | null> {
+  async ItemCreate(user_id: ObjectId, input: I_ItemParam): Promise<string> {
+    const filter = new BadWord();
     const itemId = new ObjectId();
     const indexString = createSearchIndex(input.name).join(' ');
     const initialDocument: I_ItemDocument = {
@@ -28,7 +29,7 @@ export class ItemsService {
       _original: null,
       _ownership: [user_id],
 
-      name: input.name,
+      name: filter.filter(input.name),
       category: input.category,
       image: input.image,
       price: input.price,
@@ -56,15 +57,15 @@ export class ItemsService {
     if (result.length > 0) {
       return itemId.toHexString();
     } else {
-      return null;
+      return '';
     }
   }
 
   async ItemFind(
     page: number,
-    user_id: ObjectId,
+    user_id: ObjectId | null,
     search: string,
-  ): Promise<I_ItemSearchResult[] | null> {
+  ): Promise<I_ItemSearchResult[] | []> {
     // this MVP only support random sampling for this technical interview test purposes.
     // to mock the diversation of content.
     // and mocking pages.
@@ -98,17 +99,23 @@ export class ItemsService {
     if (result.length > 0) {
       return result;
     } else {
-      return null;
+      return [];
     }
   }
 
-  async ItemUpdate(item_id: ObjectId, input: I_ItemParam): Promise<boolean> {
+  async ItemUpdate(
+    user_id: ObjectId,
+    item_id: ObjectId,
+    input: I_ItemParam,
+  ): Promise<boolean> {
+    const filter = new BadWord();
     const indexString = createSearchIndex(input.name).join(' ');
     const result = await this.itemsSchema.updateOne(
-      { _id: item_id },
+      { _id: item_id, _user: user_id },
       {
         $set: {
           ...input,
+          name: filter.filter(input.name),
           indexes: indexString,
         },
       },
