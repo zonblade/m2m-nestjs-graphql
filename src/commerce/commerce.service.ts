@@ -15,91 +15,109 @@ import {
   I_CommerceReview,
 } from './commerce.interface';
 import { InjectModel } from '@nestjs/mongoose';
+import { CommerceOrerHistory } from './commerce.model.view';
 
 @Injectable()
 export class CommerceService {
   constructor(
-    @InjectModel('Commerce') private readonly commerceModel: Model<CommerceDocument>,
-    @InjectModel('CommerceReview') private readonly commerceReviewModel: Model<CommerceReviewDocument>,
+    @InjectModel('Commerce')
+    private readonly commerceModel: Model<CommerceDocument>,
+    @InjectModel('CommerceReview')
+    private readonly commerceReviewModel: Model<CommerceReviewDocument>,
     @InjectModel('Items') private readonly itemsModel: Model<ItemsDocument>,
   ) {}
 
-  async itemAcquire(item_id: ObjectId, user_id: ObjectId, quantity: number) {
-    // create payment
-    const itemAcquires = await this.itemsModel.findById(item_id);
-    // but in this MVP only success case.
-    // create commerce document
-    const subTotal = itemAcquires.price * quantity;
-    const newCommerceItem: I_CommerceItem = {
-      id: item_id,
-      name: itemAcquires.name,
-      category: itemAcquires.category,
-      price: itemAcquires.price,
-      quantity: quantity,
-    };
-    const newCommercePayment: I_CommercePayment = {
-      method: 'MVP',
-      currency: 'IDR',
-      amount: subTotal,
-      fee: 0,
-      link: null,
-      account: null,
-      status: 'success',
-    };
+  async itemAcquire(
+    item_id: ObjectId,
+    user_id: ObjectId,
+    quantity: number,
+  ): Promise<boolean> {
+    try{
+      // create payment
+      const itemAcquires = await this.itemsModel.findById(item_id);
+      if (itemAcquires.availability < quantity) {
+        return false;
+      }
+      // but in this MVP only success case.
+      // create commerce document
+      const subTotal = itemAcquires.price * quantity;
+      const newCommerceItem: I_CommerceItem = {
+        id: item_id,
+        name: itemAcquires.name,
+        category: itemAcquires.category,
+        price: itemAcquires.price,
+        quantity: quantity,
+      };
+      const newCommercePayment: I_CommercePayment = {
+        method: 'MVP',
+        currency: 'IDR',
+        amount: subTotal,
+        fee: 0,
+        link: null,
+        account: null,
+        status: 'success',
+      };
 
-    const newCommerce: I_Commerce = {
-      _user_sell: new ObjectId(),
-      _user_acquirer: new ObjectId(),
-      items: [newCommerceItem],
-      subtotal: subTotal,
-      payment: newCommercePayment,
-    };
+      const newCommerce: I_Commerce = {
+        _user_sell: itemAcquires._user,
+        _user_acquirer: new ObjectId(user_id),
+        items: [newCommerceItem],
+        subtotal: subTotal,
+        payment: newCommercePayment,
+      };
 
-    // direct save
-    await this.commerceModel.insertMany([newCommerce]);
+      // direct save
+      await this.commerceModel.insertMany([newCommerce]);
 
-    // update old document ownership
-    // adding ownership to the item
-    const updatedItem = await this.itemsModel.findOneAndUpdate(
-      { _id: item_id },
-      [
-        {
-          $set: {
-            _ownership: {
-              $concatArrays: ['$_ownership', [user_id]],
+      // update old document ownership
+      // adding ownership to the item
+      const updatedItem = await this.itemsModel.findOneAndUpdate(
+        { _id: item_id },
+        [
+          {
+            $set: {
+              _ownership: {
+                $concatArrays: ['$_ownership', [user_id]],
+              },
+              availability: { $subtract: ['$availability', quantity] },
+              bought: { $sum: ['$bought', quantity] },
             },
           },
+        ],
+        { returnDocument: 'after' },
+      );
+      // create cloned document with ownership and user assigned to current user
+      // as readonly and cannot be reselled!
+      // this will act as user personal collection!
+      const clonedItem: I_ItemDocument = {
+        ...updatedItem,
+        _id: new ObjectId(),
+        _user: user_id,
+        _original: item_id,
+        _creator: updatedItem._user,
+        _ownership: [user_id],
+        availability: 0,
+        bought: 0,
+        time: {
+          created: new Date(),
+          updated: new Date(),
         },
-      ],
-      { returnDocument: 'after' },
-    );
-    // create cloned document with ownership and user assigned to current user
-    // as readonly and cannot be reselled!
-    // this will act as user personal collection!
-    const clonedItem: I_ItemDocument = {
-      ...updatedItem,
-      _id: new ObjectId(),
-      _user: user_id,
-      _original: item_id,
-      _creator: updatedItem._user,
-      _ownership: [user_id],
-      availability: 0,
-      bought: 0,
-      time: {
-        created: new Date(),
-        updated: new Date(),
-      },
-      control: {
-        ...updatedItem.control,
-        for_sale: false,
-        editable: false,
-      },
-    };
-    await this.itemsModel.insertMany([clonedItem]);
-    return true;
+        control: {
+          ...updatedItem.control,
+          for_sale: false,
+          editable: false,
+        },
+      };
+      await this.itemsModel.insertMany([clonedItem]);
+      return true;
+    }catch{return false}
   }
 
-  async itemReview(order_id: ObjectId, user_id: ObjectId, rating: number) {
+  async itemReview(
+    order_id: ObjectId,
+    user_id: ObjectId,
+    rating: number,
+  ): Promise<boolean> {
     // only if the user is the owner of the item.
     const ratingGuarded = rating > 5 ? 5 : rating < 0 ? 0 : rating;
     const newCommerceReview: I_CommerceReview = {
@@ -108,14 +126,14 @@ export class CommerceService {
       rating: ratingGuarded,
     };
     // direct save
-    await this.commerceModel.insertMany([newCommerceReview]);
+    await this.commerceReviewModel.insertMany([newCommerceReview]);
     // acquire all review for the item
     const itemReviews: { final_score: number }[] =
-      await this.commerceReviewModel.aggregate([
-        { $match: { _commerce: order_id } },
-        { $group: { _id: null, final_score: { $avg: '$rating' } } },
-        { $project: { _id: 0, final_score: 1 } },
-      ]);
+    await this.commerceReviewModel.aggregate([
+      { $match: { _commerce: order_id } },
+      { $group: { _id: null, final_score: { $avg: '$rating' } } },
+      { $project: { _id: 0, final_score: 1 } },
+    ]);
     // do calculation for the item rating.
     // find item from _commerce
     const itemData = await this.commerceModel.findById(order_id);
@@ -143,11 +161,42 @@ export class CommerceService {
           },
         },
       },
-    );
-  }
-
-  async orderHistory() {
+      );
+      return true;
+    }
+    
+    async orderHistory(user_id: ObjectId): Promise<CommerceOrerHistory[]> {
     // historical order for the current user.
+    const result: CommerceOrerHistory[] = await this.commerceModel.aggregate([
+      { $match: { _user_acquirer: user_id } },
+      { $lookup: {
+        from: 'commerce_review',
+        localField: '_id',
+        foreignField: '_commerce',
+        as: 'review',
+      }},
+      {
+        $project: {
+          id: {$toString:'$_id'},
+          name: { $first: '$items.name' },
+          category: { $first: '$items.category' },
+          price: {
+            $multiply: [
+              { $first: '$items.price' },
+              { $first: '$items.quantity' },
+            ],
+          },
+          has_review :{
+            $cond:{
+              if:{$gt:[{$size:'$review'},0]},
+              then:{ $toBool:true},
+              else:{$toBool:false}
+            }
+          }
+        },
+      },
+    ]);
+    return result;
   }
 
   async paymentList() {
