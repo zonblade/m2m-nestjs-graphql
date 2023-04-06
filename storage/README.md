@@ -1,0 +1,1 @@
+please serve this folder under nginx static folder

@@ -24,50 +24,12 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+1. run nest like usual.
 
-## Installation
+2. set engine-x (nginx) static serving into this /storage folder
 
-```bash
-$ npm install
-```
+3. you can taste live demo on m2m.retas.org/graphql
 
-## Running the app
+4. you can download the apps on [here]() (im using [expo.dev](https://expo.dev/) for Mini MVP purposes, which accelerate the development time)
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+5. or you can build yourself from source code on reactnative-m2m repository and host your own backend.
