@@ -28,11 +28,7 @@
 
 2. set engine-x (nginx) static serving into this /storage folder
 
-3. you can taste live demo on m2m.retas.org/graphql
-
-4. you can download the apps on [here]() react-native unsafe Typescript for Mini MVP purposes, which accelerate the development time)
-
-5. or you can build yourself from source code on reactnative-m2m repository and host your own backend.
+3. or you can build yourself from source code on reactnative-m2m repository and host your own backend.
 
 ## File uploader
 
